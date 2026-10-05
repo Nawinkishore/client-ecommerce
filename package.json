@@ -1,0 +1,17 @@
+{
+  "name": "client-ecommerce-root",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Production Monorepo for Client Ecommerce Application",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "build": "pnpm --recursive run build",
+    "lint": "pnpm --recursive run lint",
+    "type-check": "pnpm --recursive run type-check",
+    "test": "pnpm --recursive run test",
+    "clean": "pnpm --recursive run clean"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}

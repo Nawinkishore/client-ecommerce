@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "es2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "declaration": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@client-ecommerce/types": ["../types/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["src/__tests__/**/*", "node_modules"]
+}
