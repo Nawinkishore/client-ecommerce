@@ -6,7 +6,7 @@
 
 ## taskList
 
-- [ ] **Task 7.1: Admin Guard & Sidebar Layout**
+- [x] **Task 7.1: Admin Guard & Sidebar Layout**
   - **Location**: `apps/web/src/app/(admin)/admin/layout.tsx`
   - **Details**:
     - Protect admin route segment: verify authenticated user has `role === 'ADMIN'`.
@@ -14,7 +14,7 @@
     - Admin Sidebar with links to Dashboard, Products, Orders, Categories, and Analytics.
   - **Verification**: Attempt accessing `/admin` as guest, customer, and admin user.
 
-- [ ] **Task 7.2: Admin Dashboard Page (`/admin/dashboard`)**
+- [x] **Task 7.2: Admin Dashboard Page (`/admin/dashboard`)**
   - **Location**: `apps/web/src/app/(admin)/admin/dashboard/page.tsx`
   - **Details**:
     - Executive metric cards: Total Revenue, Total Orders, Active Customers, Low Stock Alerts.
@@ -22,14 +22,14 @@
     - Recent Orders table preview.
   - **Verification**: Verify metrics accurately display backend statistics API data.
 
-- [ ] **Task 7.3: Admin Product Management (`/admin/products`)**
+- [x] **Task 7.3: Admin Product Management (`/admin/products`)**
   - **Location**: `apps/web/src/app/(admin)/admin/products/page.tsx`, `apps/web/src/components/admin/ProductFormModal.tsx`
   - **Details**:
     - Filterable table of all store products with SKU, base price, total stock, and status toggle (`isActive`).
     - Create/Edit Product Modal supporting title, description, subcategory, base price, image URLs, and variant builder (Size/Color/Stock).
   - **Verification**: Create a new product, edit price & stock, verify creation in frontend catalog and PostgreSQL DB.
 
-- [ ] **Task 7.4: Admin Order Management (`/admin/orders`)**
+- [x] **Task 7.4: Admin Order Management (`/admin/orders`)**
   - **Location**: `apps/web/src/app/(admin)/admin/orders/page.tsx`
   - **Details**:
     - Order list table with customer name, total amount, payment status, and fulfillment status.
@@ -37,7 +37,7 @@
     - Tracking number input field.
   - **Verification**: Update order status from `PROCESSING` to `SHIPPED`; verify status updates in customer order history.
 
-- [ ] **Task 7.5: Full-Stack Verification & Build Audit**
+- [x] **Task 7.5: Full-Stack Verification & Build Audit**
   - **Location**: Monorepo Root
   - **Details**:
     - Execute `pnpm run type-check` across all apps and packages.

@@ -51,7 +51,13 @@ export async function signup(
           phone: profile.phone,
           role: profile.role,
         },
-        session: authData.session,
+        session: authData.session
+          ? {
+              accessToken: authData.session.access_token,
+              refreshToken: authData.session.refresh_token,
+              expiresIn: authData.session.expires_in,
+            }
+          : null,
       },
       "Account registered successfully",
       undefined,
