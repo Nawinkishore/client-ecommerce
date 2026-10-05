@@ -45,3 +45,10 @@ export class ValidationError extends AppError {
     super(message, 400, "VALIDATION_ERROR", details);
   }
 }
+
+export class BadRequestError extends AppError {
+  constructor(message: string = "Bad request") {
+    super(message, 400, "BAD_REQUEST");
+  }
+}
+
