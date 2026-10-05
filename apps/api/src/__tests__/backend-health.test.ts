@@ -45,9 +45,10 @@ test("Backend Infrastructure Verification Suite", async (t) => {
     await handler(mockReq, mockRes);
 
     assert.equal(statusCode, 200);
-    assert.equal(jsonResponse.status, "ok");
-    assert.equal(jsonResponse.service, "client-ecommerce-api");
-    assert.ok(jsonResponse.timestamp);
+    assert.equal(jsonResponse.success, true);
+    assert.equal(jsonResponse.data.status, "ok");
+    assert.equal(jsonResponse.data.service, "client-ecommerce-api");
+    assert.ok(jsonResponse.data.timestamp);
   });
 
   await t.test("3. Supabase Cloud DB Query Test via Supabase Client", async () => {

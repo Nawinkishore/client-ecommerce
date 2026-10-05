@@ -6,7 +6,7 @@
 
 ## taskList
 
-- [ ] **Task 3.1: Standardized API Response Helper & Error Classes**
+- [x] **Task 3.1: Standardized API Response Helper & Error Classes**
   - **Location**: `apps/api/src/utils/response.ts` & `apps/api/src/errors/app-error.ts`
   - **Details**:
     - Implement `sendSuccess(res, data, message, meta)` envelope function.
@@ -14,14 +14,14 @@
     - Create `AppError`, `NotFoundError`, `UnauthorizedError`, `ForbiddenError`, `ValidationError` custom error classes.
   - **Verification**: Write unit test or manual assertion for response envelope format.
 
-- [ ] **Task 3.2: Request Payload Validation Middleware**
+- [x] **Task 3.2: Request Payload Validation Middleware**
   - **Location**: `apps/api/src/middleware/validate.ts`
   - **Details**:
     - Build `validateRequest({ body, query, params })` higher-order middleware accepting Zod schemas.
     - Catch Zod validation errors and format them into structured `VALIDATION_ERROR` response payload.
   - **Verification**: Test endpoint with invalid payload and check structured 400 JSON response.
 
-- [ ] **Task 3.3: Supabase Auth & JWT Verification Middleware**
+- [x] **Task 3.3: Supabase Auth & JWT Verification Middleware**
   - **Location**: `apps/api/src/middleware/auth.ts`
   - **Details**:
     - Extract `Authorization: Bearer <token>` from HTTP headers.
@@ -30,14 +30,14 @@
     - Attach `req.user = { id, userId, email, role }` to request context.
   - **Verification**: Test protected route with valid and invalid JWT tokens.
 
-- [ ] **Task 3.4: Admin Authorization Guard Middleware**
+- [x] **Task 3.4: Admin Authorization Guard Middleware**
   - **Location**: `apps/api/src/middleware/admin.ts`
   - **Details**:
     - Verify `req.user` exists and `req.user.role === 'ADMIN'`.
     - Return `FORBIDDEN` (403) status if user is non-admin.
   - **Verification**: Test endpoint with customer token vs admin token.
 
-- [ ] **Task 3.5: Global Express Error Handling Middleware**
+- [x] **Task 3.5: Global Express Error Handling Middleware**
   - **Location**: `apps/api/src/middleware/error-handler.ts`
   - **Details**:
     - Intercept uncaught exceptions, Prisma database errors, and custom `AppError` instances.
