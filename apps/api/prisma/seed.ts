@@ -122,13 +122,17 @@ async function main() {
   // Get subcategory IDs
   const laptopSubcategory = electronicsCategory.subcategories.find(
     (s) => s.slug === "laptops-computers"
-  )!;
+  );
   const audioSubcategory = electronicsCategory.subcategories.find(
     (s) => s.slug === "audio-headphones"
-  )!;
+  );
   const mensSubcategory = fashionCategory.subcategories.find(
     (s) => s.slug === "mens-apparel"
-  )!;
+  );
+
+  if (!laptopSubcategory || !audioSubcategory || !mensSubcategory) {
+    throw new Error("❌ Required subcategories were not found during database seeding.");
+  }
 
   // 4. Seed Products with Variants & Images
 
@@ -285,9 +289,9 @@ async function main() {
   console.log("⭐ Seeded Customer Product Review");
 
   // 6. Seed Sample Order
-  const laptopVariant = await prisma.productVariant.findFirst({
+  const laptopVariant = await prisma.productVariant.findFirstOrThrow({
     where: { productId: laptopProduct.id },
-  })!;
+  });
 
   const sampleOrder = await prisma.order.create({
     data: {
@@ -303,7 +307,7 @@ async function main() {
       items: {
         create: [
           {
-            productVariantId: laptopVariant!.id,
+            productVariantId: laptopVariant.id,
             unitPrice: 2499.99,
             quantity: 1,
             totalPrice: 2499.99,
