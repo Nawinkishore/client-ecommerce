@@ -159,6 +159,9 @@ importers:
         specifier: workspace:*
         version: link:../types
     devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
       tsx:
         specifier: ^4.7.1
         version: 4.23.15
@@ -172,6 +175,9 @@ importers:
         specifier: ^3.22.4
         version: 3.25.76
     devDependencies:
+      '@types/node':
+        specifier: ^20.11.0
+        version: 20.19.43
       tsx:
         specifier: ^4.7.1
         version: 4.23.15
