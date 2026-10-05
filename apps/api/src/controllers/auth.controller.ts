@@ -3,7 +3,7 @@ import { supabase } from "../lib/supabase";
 import { prisma } from "../lib/prisma";
 import { sendSuccess } from "../utils/response";
 import { BadRequestError, UnauthorizedError } from "../errors/app-error";
-import { SignupInput, LoginInput } from "@client-ecommerce/validation";
+import { SignupInput, LoginInput, ResetPasswordInput, RefreshTokenInput } from "@client-ecommerce/validation";
 
 export async function signup(
   req: Request<{}, {}, SignupInput>,
@@ -164,3 +164,61 @@ export async function forgotPassword(
     next(err);
   }
 }
+
+export async function resetPassword(
+  req: Request<{}, {}, ResetPasswordInput>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { password, accessToken } = req.body;
+
+    const { error: sessionError } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: "",
+    });
+
+    if (sessionError) {
+      throw new BadRequestError("Invalid or expired password reset token");
+    }
+
+    const { error } = await supabase.auth.updateUser({ password });
+
+    if (error) {
+      throw new BadRequestError(error.message);
+    }
+
+    sendSuccess(res, null, "Password has been reset successfully");
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function refreshToken(
+  req: Request<{}, {}, RefreshTokenInput>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { refreshToken: token } = req.body;
+
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token: token });
+
+    if (error || !data.session) {
+      throw new UnauthorizedError("Session expired, please log in again");
+    }
+
+    sendSuccess(
+      res,
+      {
+        accessToken: data.session.access_token,
+        refreshToken: data.session.refresh_token,
+        expiresIn: data.session.expires_in,
+      },
+      "Token refreshed successfully"
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+

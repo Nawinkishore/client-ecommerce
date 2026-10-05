@@ -21,6 +21,9 @@ interface AuthContextType {
   register: (email: string, password: string, fullName: string, phone?: string) => Promise<UserProfile>;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
+  changePassword: (newPassword: string) => Promise<void>;
+  resetPassword: (password: string, accessToken: string) => Promise<void>;
+  updateProfile: (data: { fullName?: string; phone?: string; avatarUrl?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -43,11 +46,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(res.data.data);
       } else {
         localStorage.removeItem("token");
+        localStorage.removeItem("refreshToken");
         setUser(null);
       }
     } catch (err) {
       console.error("Auth session check failed", err);
       localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -64,6 +69,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const { user: userProfile, session } = res.data.data;
       if (session?.accessToken) {
         localStorage.setItem("token", session.accessToken);
+      }
+      if (session?.refreshToken) {
+        localStorage.setItem("refreshToken", session.refreshToken);
       }
       setUser(userProfile);
       return userProfile;
@@ -83,6 +91,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.accessToken) {
         localStorage.setItem("token", session.accessToken);
       }
+      if (session?.refreshToken) {
+        localStorage.setItem("refreshToken", session.refreshToken);
+      }
       setUser(userProfile);
       return userProfile;
     }
@@ -96,7 +107,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       console.warn("Logout request failed", e);
     } finally {
       localStorage.removeItem("token");
+      localStorage.removeItem("refreshToken");
       setUser(null);
+    }
+  };
+
+  const changePassword = async (newPassword: string) => {
+    const res = await apiClient.put("/api/v1/users/me/change-password", { newPassword });
+    if (!res.data?.success) {
+      throw new Error(res.data?.message || "Failed to update password");
+    }
+  };
+
+  const resetPassword = async (password: string, accessToken: string) => {
+    const res = await apiClient.post("/api/v1/auth/reset-password", { password, accessToken });
+    if (!res.data?.success) {
+      throw new Error(res.data?.message || "Failed to reset password");
+    }
+  };
+
+  const updateProfile = async (data: { fullName?: string; phone?: string; avatarUrl?: string }) => {
+    const res = await apiClient.put("/api/v1/users/me", data);
+    if (res.data?.success) {
+      setUser(res.data.data);
+    } else {
+      throw new Error(res.data?.message || "Failed to update profile");
     }
   };
 
@@ -111,6 +146,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         refetchUser: fetchMe,
+        changePassword,
+        resetPassword,
+        updateProfile,
       }}
     >
       {children}

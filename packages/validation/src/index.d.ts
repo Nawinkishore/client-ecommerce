@@ -25,8 +25,38 @@ export declare const LoginSchema: z.ZodObject<{
     email: string;
     password: string;
 }>;
+export declare const ResetPasswordSchema: z.ZodObject<{
+    password: z.ZodString;
+    accessToken: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    password: string;
+    accessToken: string;
+}, {
+    password: string;
+    accessToken: string;
+}>;
+export declare const ChangePasswordSchema: z.ZodObject<{
+    currentPassword: z.ZodOptional<z.ZodString>;
+    newPassword: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    newPassword: string;
+    currentPassword?: string | undefined;
+}, {
+    newPassword: string;
+    currentPassword?: string | undefined;
+}>;
+export declare const RefreshTokenSchema: z.ZodObject<{
+    refreshToken: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    refreshToken: string;
+}, {
+    refreshToken: string;
+}>;
 export type SignupInput = z.infer<typeof SignupSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
+export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
 export declare const ProductQuerySchema: z.ZodObject<{
     search: z.ZodOptional<z.ZodString>;
     categoryId: z.ZodOptional<z.ZodString>;

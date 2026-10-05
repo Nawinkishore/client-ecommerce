@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UpdateOrderStatusSchema = exports.CheckoutIntentSchema = exports.UpdateAddressSchema = exports.CreateAddressSchema = exports.SyncCartSchema = exports.UpdateCartItemSchema = exports.AddToCartSchema = exports.ReviewSchema = exports.UpdateProductSchema = exports.CreateProductSchema = exports.ProductImageSchema = exports.ProductVariantSchema = exports.ProductQuerySchema = exports.LoginSchema = exports.SignupSchema = void 0;
+exports.UpdateOrderStatusSchema = exports.CheckoutIntentSchema = exports.UpdateAddressSchema = exports.CreateAddressSchema = exports.SyncCartSchema = exports.UpdateCartItemSchema = exports.AddToCartSchema = exports.ReviewSchema = exports.UpdateProductSchema = exports.CreateProductSchema = exports.ProductImageSchema = exports.ProductVariantSchema = exports.ProductQuerySchema = exports.RefreshTokenSchema = exports.ChangePasswordSchema = exports.ResetPasswordSchema = exports.LoginSchema = exports.SignupSchema = void 0;
 const zod_1 = require("zod");
 // ---------------------------------------------------------------------------
 // 1. Auth Validation Schemas
@@ -17,6 +17,23 @@ exports.SignupSchema = zod_1.z.object({
 exports.LoginSchema = zod_1.z.object({
     email: zod_1.z.string().trim().email({ message: "Invalid email address format" }),
     password: zod_1.z.string().min(1, { message: "Password is required" }),
+});
+exports.ResetPasswordSchema = zod_1.z.object({
+    password: zod_1.z
+        .string()
+        .min(8, { message: "Password must be at least 8 characters long" })
+        .max(100, { message: "Password cannot exceed 100 characters" }),
+    accessToken: zod_1.z.string().min(1, { message: "Access token is required" }),
+});
+exports.ChangePasswordSchema = zod_1.z.object({
+    currentPassword: zod_1.z.string().min(1, { message: "Current password is required" }).optional(),
+    newPassword: zod_1.z
+        .string()
+        .min(8, { message: "New password must be at least 8 characters long" })
+        .max(100, { message: "Password cannot exceed 100 characters" }),
+});
+exports.RefreshTokenSchema = zod_1.z.object({
+    refreshToken: zod_1.z.string().min(1, { message: "Refresh token is required" }),
 });
 // ---------------------------------------------------------------------------
 // 2. Product & Review Validation Schemas

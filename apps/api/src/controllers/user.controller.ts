@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../lib/prisma";
+import { supabase } from "../lib/supabase";
 import { sendSuccess } from "../utils/response";
-import { NotFoundError, UnauthorizedError, ForbiddenError } from "../errors/app-error";
-import { CreateAddressInput } from "@client-ecommerce/validation";
+import { NotFoundError, UnauthorizedError, ForbiddenError, BadRequestError } from "../errors/app-error";
+import { CreateAddressInput, ChangePasswordInput } from "@client-ecommerce/validation";
 
 export async function getMe(
   req: Request,
@@ -134,3 +135,28 @@ export async function deleteAddress(
     next(err);
   }
 }
+
+export async function changePassword(
+  req: Request<{}, {}, ChangePasswordInput>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new UnauthorizedError("Authentication required");
+    }
+
+    const { newPassword } = req.body;
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+      throw new BadRequestError(error.message);
+    }
+
+    sendSuccess(res, null, "Password updated successfully");
+  } catch (err) {
+    next(err);
+  }
+}
+

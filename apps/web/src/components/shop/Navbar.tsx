@@ -108,10 +108,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart, cartItemCount = 0 })
           {/* Dynamic Auth Buttons */}
           {isAuthenticated ? (
             <div className="flex items-center gap-2">
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+              <Link
+                href="/account"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-xs font-semibold text-emerald-700 dark:text-emerald-300 transition-colors"
+              >
                 <User className="w-3.5 h-3.5" />
                 <span>{user?.fullName || user?.email.split("@")[0]}</span>
-              </div>
+              </Link>
               <Button
                 variant="outline"
                 size="sm"
@@ -192,9 +195,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCart, cartItemCount = 0 })
               </Link>
             </div>
           ) : (
-            <Button variant="outline" size="sm" onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full text-rose-500 border-rose-500/30">
-              Logout
-            </Button>
+            <div className="space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <Link
+                href="/account"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block text-sm font-semibold text-emerald-600 dark:text-emerald-400"
+              >
+                My Account Profile
+              </Link>
+              <Button variant="outline" size="sm" onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full text-rose-500 border-rose-500/30">
+                Logout
+              </Button>
+            </div>
           )}
         </div>
       )}

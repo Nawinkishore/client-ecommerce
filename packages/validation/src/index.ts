@@ -19,8 +19,31 @@ export const LoginSchema = z.object({
   password: z.string().min(1, { message: "Password is required" }),
 });
 
+export const ResetPasswordSchema = z.object({
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long" })
+    .max(100, { message: "Password cannot exceed 100 characters" }),
+  accessToken: z.string().min(1, { message: "Access token is required" }),
+});
+
+export const ChangePasswordSchema = z.object({
+  currentPassword: z.string().min(1, { message: "Current password is required" }).optional(),
+  newPassword: z
+    .string()
+    .min(8, { message: "New password must be at least 8 characters long" })
+    .max(100, { message: "Password cannot exceed 100 characters" }),
+});
+
+export const RefreshTokenSchema = z.object({
+  refreshToken: z.string().min(1, { message: "Refresh token is required" }),
+});
+
 export type SignupInput = z.infer<typeof SignupSchema>;
 export type LoginInput = z.infer<typeof LoginSchema>;
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+export type ChangePasswordInput = z.infer<typeof ChangePasswordSchema>;
+export type RefreshTokenInput = z.infer<typeof RefreshTokenSchema>;
 
 // ---------------------------------------------------------------------------
 // 2. Product & Review Validation Schemas

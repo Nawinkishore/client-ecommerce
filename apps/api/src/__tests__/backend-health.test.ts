@@ -9,6 +9,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { validateEnv } from "@client-ecommerce/config";
 import { supabase } from "../lib/supabase";
+import { prisma } from "../lib/prisma";
 import app from "../index";
 
 test("Backend Infrastructure Verification Suite", async (t) => {
@@ -51,19 +52,16 @@ test("Backend Infrastructure Verification Suite", async (t) => {
     assert.ok(jsonResponse.data.timestamp);
   });
 
-  await t.test("3. Supabase Cloud DB Query Test via Supabase Client", async () => {
-    const { data: categories, error: catError } = await supabase.from("categories").select("*");
-    assert.ifError(catError);
+  await t.test("3. Prisma Database Connection & Query Test", async () => {
+    const categories = await prisma.category.findMany();
     assert.ok(Array.isArray(categories));
     assert.ok(categories.length >= 2, "Expected at least 2 seeded categories");
 
-    const { data: products, error: prodError } = await supabase.from("products").select("*");
-    assert.ifError(prodError);
+    const products = await prisma.product.findMany();
     assert.ok(Array.isArray(products));
     assert.ok(products.length >= 3, "Expected at least 3 seeded products");
 
-    const { data: profiles, error: profError } = await supabase.from("profiles").select("*");
-    assert.ifError(profError);
+    const profiles = await prisma.profile.findMany();
     assert.ok(Array.isArray(profiles));
     assert.ok(profiles.length >= 2, "Expected at least 2 seeded profiles");
   });
