@@ -59,7 +59,7 @@ exports.CreateProductSchema = zod_1.z.object({
 });
 exports.UpdateProductSchema = exports.CreateProductSchema.partial();
 exports.ReviewSchema = zod_1.z.object({
-    productId: zod_1.z.string().uuid({ message: "Invalid product ID" }),
+    productId: zod_1.z.string().uuid({ message: "Invalid product ID" }).optional(),
     rating: zod_1.z
         .number()
         .int()

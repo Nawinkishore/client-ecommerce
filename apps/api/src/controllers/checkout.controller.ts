@@ -46,7 +46,7 @@ export async function createCheckoutIntent(
         throw new BadRequestError("Your cart is empty");
       }
 
-      itemsToProcess = userCart.items.map((i) => ({
+      itemsToProcess = userCart.items.map((i: any) => ({
         productVariantId: i.productVariantId,
         quantity: i.quantity,
       }));

@@ -77,15 +77,16 @@ export async function getProducts(
 
     const meta = calculatePaginationMeta(total, page, limit);
 
-    const formattedProducts = products.map((product) => {
+    let formattedProducts = products.map((product: any) => {
+      const reviews: Array<{ rating: number }> = product.reviews || [];
       const avgRating =
-        product.reviews.length > 0
-          ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length
+        reviews.length > 0
+          ? reviews.reduce((acc: number, r: { rating: number }) => acc + r.rating, 0) / reviews.length
           : 0;
       return {
         ...product,
         averageRating: Math.round(avgRating * 10) / 10,
-        reviewCount: product.reviews.length,
+        reviewCount: reviews.length,
       };
     });
 
@@ -102,6 +103,10 @@ export async function getProductBySlug(
 ): Promise<void> {
   try {
     const { slug } = req.params;
+
+    if (!slug) {
+      throw new NotFoundError("Product not found");
+    }
 
     const product = await prisma.product.findUnique({
       where: { slug },
@@ -128,9 +133,10 @@ export async function getProductBySlug(
       throw new NotFoundError("Product not found");
     }
 
+    const reviews = product.reviews || [];
     const avgRating =
-      product.reviews.length > 0
-        ? product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length
+      reviews.length > 0
+        ? reviews.reduce((acc: number, r: any) => acc + r.rating, 0) / reviews.length
         : 0;
 
     sendSuccess(
@@ -138,7 +144,7 @@ export async function getProductBySlug(
       {
         ...product,
         averageRating: Math.round(avgRating * 10) / 10,
-        reviewCount: product.reviews.length,
+        reviewCount: reviews.length,
       },
       "Product fetched successfully"
     );
@@ -157,8 +163,13 @@ export async function createReview(
       throw new UnauthorizedError("Authentication required");
     }
 
-    const { id: productId } = req.params;
-    const { rating, comment } = req.body;
+    const productId = req.params.id || (req.body as any)?.productId;
+
+    if (!productId) {
+      throw new BadRequestError("Product ID is required");
+    }
+
+    const { rating, comment } = req.body || {};
 
     const product = await prisma.product.findUnique({
       where: { id: productId },

@@ -69,7 +69,7 @@ export const CreateProductSchema = z.object({
 export const UpdateProductSchema = CreateProductSchema.partial();
 
 export const ReviewSchema = z.object({
-  productId: z.string().uuid({ message: "Invalid product ID" }),
+  productId: z.string().uuid({ message: "Invalid product ID" }).optional(),
   rating: z
     .number()
     .int()

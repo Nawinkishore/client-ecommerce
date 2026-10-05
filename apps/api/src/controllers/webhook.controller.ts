@@ -61,7 +61,7 @@ export async function handleStripeWebhook(
       }
 
       if (order && order.status !== "PAID") {
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: any) => {
           await tx.order.update({
             where: { id: order.id },
             data: { status: "PAID" },

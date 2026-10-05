@@ -14,7 +14,7 @@ import app from "../index";
 test("Backend Infrastructure Verification Suite", async (t) => {
   await t.test("1. Environment Variables Validation", () => {
     const env = validateEnv();
-    assert.equal(env.PORT, 4000);
+    assert.equal(env.PORT, 5000);
     assert.ok(env.SUPABASE_URL, "SUPABASE_URL must be defined");
     assert.ok(env.SUPABASE_ANON_KEY, "SUPABASE_ANON_KEY must be defined");
   });

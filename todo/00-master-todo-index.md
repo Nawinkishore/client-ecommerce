@@ -14,9 +14,9 @@
 | **Phase 2** | [`02-backend-shared-packages.md`](./02-backend-shared-packages.md) | Shared TypeScript models, Zod validation schemas, utility functions | ✅ Completed |
 | **Phase 3** | [`03-backend-api-core-and-middleware.md`](./03-backend-api-core-and-middleware.md) | Express server, standardized envelope, error handling & Supabase Auth JWT middleware | ✅ Completed |
 | **Phase 4** | [`04-backend-api-modules.md`](./04-backend-api-modules.md) | Controllers & Routes for Auth, Users, Categories, Products, Cart, Checkout, Webhooks, Orders & Admin | ✅ Completed |
-| **Phase 5** | [`05-frontend-foundation-and-catalog.md`](./05-frontend-foundation-and-catalog.md) | Next.js App Router, Tailwind glassmorphism theme, UI primitives & Product Catalog | ⏳ Pending |
-| **Phase 6** | [`06-frontend-auth-cart-checkout.md`](./06-frontend-auth-cart-checkout.md) | Supabase Auth UI integration, Guest/User Cart sync, Multi-step Checkout & Stripe integration | ⏳ Pending |
-| **Phase 7** | [`07-frontend-admin-and-testing.md`](./07-frontend-admin-and-testing.md) | Admin Dashboard, Product CRUD, Order Fulfullment, and Full-Stack Verification | ⏳ Pending |
+| Phase 5 | [`05-frontend-foundation-and-catalog.md`](./05-frontend-foundation-and-catalog.md) | Next.js App Router, Tailwind glassmorphism theme, UI primitives & Product Catalog | ✅ Completed |
+| Phase 6 | [`06-frontend-auth-cart-checkout.md`](./06-frontend-auth-cart-checkout.md) | Supabase Auth UI integration, Guest/User Cart sync, Multi-step Checkout & Stripe integration | ✅ Completed |
+| Phase 7 | [`07-frontend-admin-and-testing.md`](./07-frontend-admin-and-testing.md) | Admin Dashboard, Product CRUD, Order Fulfullment, and Full-Stack Verification | ✅ Completed |
 
 ---
 

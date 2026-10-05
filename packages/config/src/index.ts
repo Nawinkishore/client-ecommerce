@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
-  PORT: z.coerce.number().default(4000),
+  PORT: z.coerce.number().default(5000),
   DATABASE_URL: z
     .string()
     .default("postgresql://postgres:postgres@localhost:5432/client_ecommerce?schema=public"),

@@ -263,16 +263,16 @@ export declare const UpdateProductSchema: z.ZodObject<{
     }[] | undefined;
 }>;
 export declare const ReviewSchema: z.ZodObject<{
-    productId: z.ZodString;
+    productId: z.ZodOptional<z.ZodString>;
     rating: z.ZodNumber;
     comment: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     rating: number;
-    productId: string;
+    productId?: string | undefined;
     comment?: string | undefined;
 }, {
     rating: number;
-    productId: string;
+    productId?: string | undefined;
     comment?: string | undefined;
 }>;
 export type ProductQueryInput = z.infer<typeof ProductQuerySchema>;

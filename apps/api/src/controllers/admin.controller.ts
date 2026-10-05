@@ -23,7 +23,7 @@ export async function getAnalytics(
       select: { totalAmount: true },
     });
 
-    const totalRevenue = paidOrders.reduce((sum, order) => sum + Number(order.totalAmount), 0);
+    const totalRevenue = paidOrders.reduce((sum: number, order: any) => sum + Number(order.totalAmount), 0);
 
     const lowStockVariants = await prisma.productVariant.findMany({
       where: { stockCount: { lte: 5 } },
@@ -41,7 +41,7 @@ export async function getAnalytics(
         totalOrders,
         totalCustomers,
         totalRevenue: Math.round(totalRevenue * 100) / 100,
-        lowStockWarnings: lowStockVariants.map((v) => ({
+        lowStockWarnings: lowStockVariants.map((v: any) => ({
           id: v.id,
           sku: v.sku,
           variantName: v.name,
@@ -96,7 +96,7 @@ export async function createProduct(
       throw new BadRequestError(`Product with slug "${productSlug}" already exists`);
     }
 
-    const product = await prisma.$transaction(async (tx) => {
+    const product = await prisma.$transaction(async (tx: any) => {
       const createdProduct = await tx.product.create({
         data: {
           subcategoryId,
