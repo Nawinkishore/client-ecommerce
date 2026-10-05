@@ -135,3 +135,32 @@ export async function logout(
     next(err);
   }
 }
+
+export async function forgotPassword(
+  req: Request<{}, {}, { email: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw new BadRequestError("Email address is required");
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${req.headers.origin || "http://localhost:3000"}/reset-password`,
+    });
+
+    if (error) {
+      throw new BadRequestError(error.message);
+    }
+
+    sendSuccess(
+      res,
+      null,
+      "If an account with this email exists, a password reset link has been dispatched."
+    );
+  } catch (err) {
+    next(err);
+  }
+}
