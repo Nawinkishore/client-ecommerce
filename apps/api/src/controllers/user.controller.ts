@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../lib/prisma";
-import { supabase } from "../lib/supabase";
+import { supabase, createUserClient } from "../lib/supabase";
 import { sendSuccess } from "../utils/response";
 import { NotFoundError, UnauthorizedError, ForbiddenError, BadRequestError } from "../errors/app-error";
 import { CreateAddressInput, ChangePasswordInput } from "@client-ecommerce/validation";
@@ -147,11 +147,27 @@ export async function changePassword(
     }
 
     const { newPassword } = req.body;
+    let token: string | undefined = req.cookies?.["sb-access-token"];
 
-    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
+    }
+
+    let error: any = null;
+
+    if (token) {
+      const userSupabase = createUserClient(token);
+      const res = await userSupabase.auth.updateUser({ password: newPassword });
+      error = res.error;
+    } else {
+      const { error: adminError } = await supabase.auth.admin.updateUserById(req.user.userId, {
+        password: newPassword,
+      });
+      error = adminError;
+    }
 
     if (error) {
-      throw new BadRequestError(error.message);
+      throw new BadRequestError(error.message || "Failed to update password");
     }
 
     sendSuccess(res, null, "Password updated successfully");

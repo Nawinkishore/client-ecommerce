@@ -28,10 +28,10 @@ export async function requireAuth(
     let userId: string | null = null;
     const jwtSecret = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET;
 
-    // Fast local verification if secret is available
+    // Fast local verification if secret is available with strict algorithm enforcement
     if (jwtSecret) {
       try {
-        const decoded = jwt.verify(token, jwtSecret) as { sub?: string };
+        const decoded = jwt.verify(token, jwtSecret, { algorithms: ["HS256"] }) as { sub?: string };
         if (decoded && decoded.sub) {
           userId = decoded.sub;
         }

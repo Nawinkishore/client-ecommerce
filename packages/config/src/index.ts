@@ -3,6 +3,7 @@ import { z } from "zod";
 export const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   PORT: z.coerce.number().default(5000),
+  CLIENT_URL: z.string().default("http://localhost:3000"),
   DATABASE_URL: z
     .string()
     .default("postgresql://postgres:postgres@localhost:5432/client_ecommerce?schema=public"),
@@ -25,5 +26,13 @@ export function validateEnv(): Env {
     console.error("Invalid environment variables:", result.error.format());
     throw new Error("Invalid environment configuration");
   }
+
+  if (
+    result.data.NODE_ENV === "production" &&
+    result.data.JWT_SECRET === "super-secret-jwt-key-change-in-production"
+  ) {
+    throw new Error("Security Violation: Default JWT_SECRET cannot be used in production.");
+  }
+
   return result.data;
 }

@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { sendSuccess } from "../utils/response";
 import { BadRequestError, UnauthorizedError } from "../errors/app-error";
 import { SignupInput, LoginInput, ResetPasswordInput, RefreshTokenInput } from "@client-ecommerce/validation";
+import { validateEnv } from "@client-ecommerce/config";
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -32,7 +33,8 @@ export async function signup(
       throw new BadRequestError("User with this email already exists");
     }
 
-    const origin = req.headers.origin || process.env.CLIENT_URL || "http://localhost:3000";
+    const clientUrl = validateEnv().CLIENT_URL;
+    const origin = req.headers.origin || clientUrl;
     const emailRedirectTo = `${origin}/auth/callback`;
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -204,8 +206,11 @@ export async function forgotPassword(
       throw new BadRequestError("Email address is required");
     }
 
+    const clientUrl = validateEnv().CLIENT_URL;
+    const origin = req.headers.origin || clientUrl;
+
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${req.headers.origin || "http://localhost:3000"}/reset-password`,
+      redirectTo: `${origin}/auth/callback?type=recovery`,
     });
 
     if (error) {
@@ -306,7 +311,8 @@ export async function resendConfirmation(
       throw new BadRequestError("Email address is required");
     }
 
-    const origin = req.headers.origin || process.env.CLIENT_URL || "http://localhost:3000";
+    const clientUrl = validateEnv().CLIENT_URL;
+    const origin = req.headers.origin || clientUrl;
     const emailRedirectTo = `${origin}/auth/callback`;
 
     const { error } = await supabase.auth.resend({

@@ -10,20 +10,15 @@ if (currentEnv === "test") {
 }
 
 const env = validateEnv();
+const supabaseUrl = env.SUPABASE_URL || "http://localhost:54321";
+const supabaseAnonKey = env.SUPABASE_ANON_KEY || "dummy-anon-key-for-local-dev";
 
-export const supabase = createClient(
-  env.SUPABASE_URL || "https://dvlibhdsiocapbfuihsk.supabase.co",
-  env.SUPABASE_ANON_KEY || ""
-);
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 export function createUserClient(accessToken: string) {
-  return createClient(
-    env.SUPABASE_URL || "https://dvlibhdsiocapbfuihsk.supabase.co",
-    env.SUPABASE_ANON_KEY || "",
-    {
-      auth: { persistSession: false },
-      global: { headers: { Authorization: `Bearer ${accessToken}` } },
-    }
-  );
+  return createClient(supabaseUrl, supabaseAnonKey, {
+    auth: { persistSession: false },
+    global: { headers: { Authorization: `Bearer ${accessToken}` } },
+  });
 }
 
