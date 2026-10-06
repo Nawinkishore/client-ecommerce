@@ -115,7 +115,7 @@ export default function ProductDetailPage() {
 
             {/* Price */}
             <div className="text-3xl font-extrabold text-indigo-400">
-              ${currentPrice.toFixed(2)}
+              ${Number(currentPrice || 0).toFixed(2)}
             </div>
 
             {/* Description */}

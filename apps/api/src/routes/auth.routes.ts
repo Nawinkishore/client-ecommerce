@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup, login, logout, forgotPassword, resetPassword, refreshToken } from "../controllers/auth.controller";
+import { signup, login, logout, forgotPassword, resetPassword, refreshToken, resendConfirmation } from "../controllers/auth.controller";
 import { validateRequest } from "../middleware/validate";
 import { requireAuth } from "../middleware/auth";
 import { SignupSchema, LoginSchema, ResetPasswordSchema, RefreshTokenSchema } from "@client-ecommerce/validation";
@@ -12,5 +12,6 @@ router.post("/logout", requireAuth, logout);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", validateRequest({ body: ResetPasswordSchema }), resetPassword);
 router.post("/refresh", validateRequest({ body: RefreshTokenSchema }), refreshToken);
+router.post("/resend-confirmation", resendConfirmation);
 
 export default router;

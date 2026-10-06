@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { supabase } from "../lib/supabase";
+import { supabase, createUserClient } from "../lib/supabase";
 import { prisma } from "../lib/prisma";
 import { sendSuccess } from "../utils/response";
 import { BadRequestError, UnauthorizedError } from "../errors/app-error";
@@ -32,10 +32,14 @@ export async function signup(
       throw new BadRequestError("User with this email already exists");
     }
 
+    const origin = req.headers.origin || process.env.CLIENT_URL || "http://localhost:3000";
+    const emailRedirectTo = `${origin}/auth/callback`;
+
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo,
         data: {
           full_name: fullName,
         },
@@ -43,7 +47,13 @@ export async function signup(
     });
 
     if (authError || !authData.user) {
-      throw new BadRequestError(authError?.message || "Failed to create authentication user");
+      const msg = authError?.message || "";
+      if (msg.toLowerCase().includes("rate limit")) {
+        throw new BadRequestError(
+          "Supabase email rate limit exceeded (default limit is 3-4 emails/hour on default Supabase SMTP). Please wait a few minutes before trying again or configure a Custom SMTP provider in your Supabase Dashboard."
+        );
+      }
+      throw new BadRequestError(msg || "Failed to create authentication user");
     }
 
     // Attempt profile retrieval (or fallback creation if trigger delayed)
@@ -199,6 +209,11 @@ export async function forgotPassword(
     });
 
     if (error) {
+      if (error.message.toLowerCase().includes("rate limit")) {
+        throw new BadRequestError(
+          "Email rate limit exceeded (Supabase default limit is 3-4 emails/hour). Please wait a few minutes before trying again."
+        );
+      }
       throw new BadRequestError(error.message);
     }
 
@@ -220,19 +235,15 @@ export async function resetPassword(
   try {
     const { password, accessToken } = req.body;
 
-    const { error: sessionError } = await supabase.auth.setSession({
-      access_token: accessToken,
-      refresh_token: "",
-    });
-
-    if (sessionError) {
-      throw new BadRequestError("Invalid or expired password reset token");
+    if (!accessToken) {
+      throw new BadRequestError("Password reset token is required");
     }
 
-    const { error } = await supabase.auth.updateUser({ password });
+    const userSupabase = createUserClient(accessToken);
+    const { error } = await userSupabase.auth.updateUser({ password });
 
     if (error) {
-      throw new BadRequestError(error.message);
+      throw new BadRequestError(error.message || "Invalid or expired password reset token");
     }
 
     sendSuccess(res, null, "Password has been reset successfully");
@@ -283,5 +294,47 @@ export async function refreshToken(
     next(err);
   }
 }
+
+export async function resendConfirmation(
+  req: Request<{}, {}, { email: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      throw new BadRequestError("Email address is required");
+    }
+
+    const origin = req.headers.origin || process.env.CLIENT_URL || "http://localhost:3000";
+    const emailRedirectTo = `${origin}/auth/callback`;
+
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email,
+      options: {
+        emailRedirectTo,
+      },
+    });
+
+    if (error) {
+      if (error.message.toLowerCase().includes("rate limit")) {
+        throw new BadRequestError(
+          "Email rate limit exceeded (Supabase default limit is 3-4 emails/hour). Please wait a few minutes before trying again."
+        );
+      }
+      throw new BadRequestError(error.message);
+    }
+
+    sendSuccess(
+      res,
+      null,
+      "Verification email has been resent successfully. Please check your inbox."
+    );
+  } catch (err) {
+    next(err);
+  }
+}
+
 
 

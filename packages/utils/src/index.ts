@@ -1,14 +1,24 @@
 import type { PaginationMeta } from "@client-ecommerce/types";
 
 /**
- * Format a numeric amount into a localized currency string.
+ * Format a numeric amount or numeric string into a localized currency string.
  */
-export function formatCurrency(amount: number, currency = "USD"): string {
+export function formatCurrency(amount: number | string | null | undefined, currency = "USD"): string {
+  const numericAmount = typeof amount === "number" ? amount : (amount ? Number(amount) : 0);
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
-  }).format(amount);
+  }).format(isNaN(numericAmount) ? 0 : numericAmount);
 }
+
+/**
+ * Safely call toFixed on numbers, strings, or decimal objects without throwing errors.
+ */
+export function safeToFixed(value: number | string | null | undefined, decimals = 2): string {
+  const num = typeof value === "number" ? value : (value ? Number(value) : 0);
+  return (isNaN(num) ? 0 : num).toFixed(decimals);
+}
+
 
 /**
  * Convert a string into a URL-friendly slug.

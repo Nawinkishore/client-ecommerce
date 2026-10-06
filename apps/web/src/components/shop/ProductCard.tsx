@@ -79,7 +79,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
         <div>
           <span className="text-xs text-slate-400">Price</span>
-          <p className="text-base font-bold text-slate-100">${basePrice.toFixed(2)}</p>
+          <p className="text-base font-bold text-slate-100">${Number(basePrice || 0).toFixed(2)}</p>
         </div>
 
         <Button

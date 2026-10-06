@@ -31,7 +31,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 }) => {
   if (!isOpen) return null;
 
-  const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = items.reduce((acc, item) => acc + Number(item.price || 0) * item.quantity, 0);
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/80 backdrop-blur-md transition-opacity">
@@ -84,7 +84,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-semibold text-slate-100 truncate">{item.title}</h4>
                       {item.variantInfo && <p className="text-xs text-slate-400">{item.variantInfo}</p>}
-                      <p className="text-xs font-bold text-indigo-400 mt-1">${item.price.toFixed(2)}</p>
+                      <p className="text-xs font-bold text-indigo-400 mt-1">${Number(item.price || 0).toFixed(2)}</p>
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <button
@@ -122,7 +122,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="pt-6 border-t border-slate-800 space-y-4">
               <div className="flex items-center justify-between text-slate-200 font-medium">
                 <span>Subtotal</span>
-                <span className="text-lg font-bold text-white">${subtotal.toFixed(2)}</span>
+                <span className="text-lg font-bold text-white">${Number(subtotal || 0).toFixed(2)}</span>
               </div>
               <p className="text-xs text-slate-400">Shipping and taxes calculated at checkout.</p>
               <Link href="/checkout" onClick={onClose} className="block">

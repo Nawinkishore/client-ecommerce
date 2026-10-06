@@ -51,7 +51,7 @@ export const VariantSelector: React.FC<VariantSelectorProps> = ({
             >
               <div className="font-semibold">{attrSummary}</div>
               <div className="mt-1 flex items-center justify-between text-[11px]">
-                <span className="text-indigo-400 font-bold">${variant.price.toFixed(2)}</span>
+                <span className="text-indigo-400 font-bold">${Number(variant.price || 0).toFixed(2)}</span>
                 <span className={isOutOfStock ? "text-red-400" : "text-emerald-400"}>
                   {isOutOfStock ? "Out of Stock" : `${variant.stockCount} in stock`}
                 </span>

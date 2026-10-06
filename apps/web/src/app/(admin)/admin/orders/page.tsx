@@ -56,7 +56,7 @@ export default function AdminOrdersPage() {
               orders.map((ord: any) => (
                 <tr key={ord.id} className="hover:bg-slate-800/40 transition-colors">
                   <td className="px-5 py-4 font-mono font-bold text-indigo-400">{ord.orderNumber}</td>
-                  <td className="px-5 py-4 font-bold text-slate-100">${(ord.totalAmount || 0).toFixed(2)}</td>
+                  <td className="px-5 py-4 font-bold text-slate-100">${Number(ord.totalAmount || 0).toFixed(2)}</td>
                   <td className="px-5 py-4">
                     <Badge variant={ord.paymentStatus === "PAID" ? "success" : "warning"}>
                       {ord.paymentStatus}

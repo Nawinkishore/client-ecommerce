@@ -12,6 +12,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo");
+  const isConfirmed = searchParams.get("confirmed") === "true";
   const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +31,7 @@ function LoginForm() {
       } else if (userProfile?.role === "ADMIN") {
         router.push("/admin/dashboard");
       } else {
-        router.push("/products");
+        router.push("/");
       }
     } catch (err: any) {
       setError(err.message || "Invalid credentials");
@@ -52,6 +53,13 @@ function LoginForm() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-slate-100">Welcome Back</h1>
         <p className="text-xs text-slate-500 dark:text-slate-400">Sign in to access your Sreesoap account & saved orders</p>
       </div>
+
+      {isConfirmed && (
+        <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-600 dark:text-emerald-400 text-center font-medium flex items-center justify-center gap-2">
+          <Leaf className="w-4 h-4 shrink-0 text-emerald-500" />
+          <span>Email confirmed successfully! Please sign in to continue.</span>
+        </div>
+      )}
 
       {error && (
         <div className="p-3 bg-red-500/10 border border-red-500/30 rounded-xl text-xs text-red-600 dark:text-red-400 text-center font-medium">

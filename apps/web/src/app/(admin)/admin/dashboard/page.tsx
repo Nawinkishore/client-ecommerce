@@ -38,7 +38,7 @@ export default function AdminDashboardPage() {
           {isLoading ? (
             <Skeleton className="h-8 w-1/2" />
           ) : (
-            <p className="text-2xl font-bold text-slate-100">${(analytics?.totalRevenue || 12450.0).toFixed(2)}</p>
+            <p className="text-2xl font-bold text-slate-100">${Number(analytics?.totalRevenue || 12450.0).toFixed(2)}</p>
           )}
           <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
             <TrendingUp className="w-3.5 h-3.5" /> +14.2% from last month

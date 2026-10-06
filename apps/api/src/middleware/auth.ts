@@ -26,7 +26,7 @@ export async function requireAuth(
     }
 
     let userId: string | null = null;
-    const jwtSecret = process.env.SUPABASE_JWT_SECRET;
+    const jwtSecret = process.env.SUPABASE_JWT_SECRET || process.env.JWT_SECRET;
 
     // Fast local verification if secret is available
     if (jwtSecret) {

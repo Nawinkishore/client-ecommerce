@@ -65,7 +65,7 @@ export default function AdminProductsPage() {
                     <span>{prod.title}</span>
                   </td>
                   <td className="px-5 py-4 text-slate-400 font-mono text-[11px]">{prod.slug}</td>
-                  <td className="px-5 py-4 font-bold text-indigo-400">${prod.basePrice.toFixed(2)}</td>
+                  <td className="px-5 py-4 font-bold text-indigo-400">${Number(prod.basePrice || 0).toFixed(2)}</td>
                   <td className="px-5 py-4">
                     <Badge variant={prod.isActive ? "success" : "danger"}>
                       {prod.isActive ? "Active" : "Inactive"}

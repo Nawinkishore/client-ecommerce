@@ -15,3 +15,15 @@ export const supabase = createClient(
   env.SUPABASE_URL || "https://dvlibhdsiocapbfuihsk.supabase.co",
   env.SUPABASE_ANON_KEY || ""
 );
+
+export function createUserClient(accessToken: string) {
+  return createClient(
+    env.SUPABASE_URL || "https://dvlibhdsiocapbfuihsk.supabase.co",
+    env.SUPABASE_ANON_KEY || "",
+    {
+      auth: { persistSession: false },
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+    }
+  );
+}
+

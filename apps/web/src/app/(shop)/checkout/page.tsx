@@ -121,7 +121,7 @@ export default function CheckoutPage() {
                     <span className="text-slate-300 font-medium truncate max-w-[160px]">
                       {item.quantity}x {item.title}
                     </span>
-                    <span className="font-bold text-slate-100">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-bold text-slate-100">${(Number(item.price || 0) * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
               </div>
@@ -129,7 +129,7 @@ export default function CheckoutPage() {
               <div className="pt-4 border-t border-slate-800 space-y-2 text-xs text-slate-400">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="text-slate-200 font-medium">${subtotal.toFixed(2)}</span>
+                  <span className="text-slate-200 font-medium">${Number(subtotal || 0).toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
@@ -137,7 +137,7 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-sm font-bold text-slate-100 pt-2 border-t border-slate-800">
                   <span>Total Due</span>
-                  <span className="text-indigo-400">${total.toFixed(2)}</span>
+                  <span className="text-indigo-400">${Number(total || 0).toFixed(2)}</span>
                 </div>
               </div>
 
@@ -148,7 +148,7 @@ export default function CheckoutPage() {
                 isLoading={isProcessing}
                 className="w-full justify-center shadow-indigo-500/25"
               >
-                <span>Place Order (${total.toFixed(2)})</span>
+                <span>Place Order (${Number(total || 0).toFixed(2)})</span>
               </Button>
             </div>
           </div>
