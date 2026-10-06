@@ -1,5 +1,8 @@
 import express from "express";
 import cors from "cors";
+import helmet from "helmet";
+import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 import { sendSuccess } from "./utils/response";
 import { errorHandler } from "./middleware/error-handler";
 
@@ -16,8 +19,31 @@ import adminRoutes from "./routes/admin.routes";
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// Security & Parsing Middlewares
+app.use(helmet());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
+
+// Strict Rate Limiting for Authentication endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 30, // Limit each IP to 30 requests per windowMs for auth endpoints
+  message: {
+    success: false,
+    error: {
+      code: "TOO_MANY_REQUESTS",
+      message: "Too many authentication requests from this IP, please try again after 15 minutes",
+    },
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 app.get("/health", (_req, res) => {
   return sendSuccess(
@@ -28,7 +54,7 @@ app.get("/health", (_req, res) => {
 });
 
 // API Routes
-app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/auth", authLimiter, authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/products", productRoutes);
@@ -48,3 +74,4 @@ if (require.main === module) {
 }
 
 export default app;
+

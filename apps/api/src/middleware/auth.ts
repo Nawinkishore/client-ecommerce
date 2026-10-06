@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import jwt from "jsonwebtoken";
 import { supabase } from "../lib/supabase";
 import { prisma } from "../lib/prisma";
 import { UnauthorizedError } from "../errors/app-error";
@@ -9,26 +10,48 @@ export async function requireAuth(
   next: NextFunction
 ): Promise<void> {
   try {
-    const authHeader = req.headers.authorization;
+    let token: string | undefined;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return next(new UnauthorizedError("Authentication token is missing"));
+    // 1. Check HttpOnly Cookie first
+    if (req.cookies && req.cookies["sb-access-token"]) {
+      token = req.cookies["sb-access-token"];
+    } 
+    // 2. Fallback to Authorization Header (Bearer <token>)
+    else if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+      token = req.headers.authorization.split(" ")[1];
     }
-
-    const token = authHeader.split(" ")[1];
 
     if (!token) {
       return next(new UnauthorizedError("Authentication token is missing"));
     }
 
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    let userId: string | null = null;
+    const jwtSecret = process.env.SUPABASE_JWT_SECRET;
 
-    if (error || !user) {
-      return next(new UnauthorizedError("Invalid or expired authentication token"));
+    // Fast local verification if secret is available
+    if (jwtSecret) {
+      try {
+        const decoded = jwt.verify(token, jwtSecret) as { sub?: string };
+        if (decoded && decoded.sub) {
+          userId = decoded.sub;
+        }
+      } catch (err) {
+        // Local verification failed; fallback to Supabase Auth API check
+        userId = null;
+      }
+    }
+
+    // Network fallback verification if local verification did not resolve
+    if (!userId) {
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (error || !user) {
+        return next(new UnauthorizedError("Invalid or expired authentication token"));
+      }
+      userId = user.id;
     }
 
     const profile = await prisma.profile.findUnique({
-      where: { userId: user.id },
+      where: { userId },
     });
 
     if (!profile) {
@@ -47,3 +70,4 @@ export async function requireAuth(
     next(err);
   }
 }
+

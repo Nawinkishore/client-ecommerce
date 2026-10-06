@@ -33,13 +33,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchMe = useCallback(async () => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (!token) {
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-
     try {
       const res = await apiClient.get("/api/v1/users/me");
       if (res.data?.success) {
@@ -50,7 +43,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
       }
     } catch (err) {
-      console.error("Auth session check failed", err);
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
       setUser(null);
@@ -61,6 +53,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     fetchMe();
+
+    // Cross-tab logout/login synchronization listener
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "token" || e.key === "refreshToken" || e.key === "auth_event") {
+        fetchMe();
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+    };
   }, [fetchMe]);
 
   const login = async (email: string, password: string): Promise<UserProfile> => {
@@ -73,6 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.refreshToken) {
         localStorage.setItem("refreshToken", session.refreshToken);
       }
+      localStorage.setItem("auth_event", `login_${Date.now()}`);
       setUser(userProfile);
       return userProfile;
     }
@@ -94,6 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (session?.refreshToken) {
         localStorage.setItem("refreshToken", session.refreshToken);
       }
+      localStorage.setItem("auth_event", `register_${Date.now()}`);
       setUser(userProfile);
       return userProfile;
     }
@@ -108,6 +114,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       localStorage.removeItem("token");
       localStorage.removeItem("refreshToken");
+      localStorage.setItem("auth_event", `logout_${Date.now()}`);
       setUser(null);
     }
   };
@@ -163,3 +170,4 @@ export const useAuthContext = () => {
   }
   return context;
 };
+

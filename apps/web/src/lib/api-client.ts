@@ -4,12 +4,13 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Attach Authorization Bearer token from localStorage if available
+// Attach Authorization Bearer token from localStorage if present as fallback
 apiClient.interceptors.request.use((config) => {
   if (typeof window !== "undefined") {
     const token = localStorage.getItem("token");
@@ -20,7 +21,7 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Global response error handler with automatic token refresh
+// Global response error handler with automatic token refresh via cookie or payload
 apiClient.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -34,27 +35,26 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       const refreshToken = localStorage.getItem("refreshToken");
 
-      if (refreshToken) {
-        try {
-          const refreshRes = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
-            refreshToken,
-          });
+      try {
+        const refreshRes = await axios.post(
+          `${API_BASE_URL}/api/v1/auth/refresh`,
+          refreshToken ? { refreshToken } : {},
+          { withCredentials: true }
+        );
 
-          if (refreshRes.data?.success && refreshRes.data?.data?.accessToken) {
-            const { accessToken: newAccess, refreshToken: newRefresh } = refreshRes.data.data;
+        if (refreshRes.data?.success) {
+          const { accessToken: newAccess, refreshToken: newRefresh } = refreshRes.data.data || {};
+          if (newAccess) {
             localStorage.setItem("token", newAccess);
-            if (newRefresh) {
-              localStorage.setItem("refreshToken", newRefresh);
-            }
-
             originalRequest.headers.Authorization = `Bearer ${newAccess}`;
-            return apiClient(originalRequest);
           }
-        } catch (refreshErr) {
-          localStorage.removeItem("token");
-          localStorage.removeItem("refreshToken");
+          if (newRefresh) {
+            localStorage.setItem("refreshToken", newRefresh);
+          }
+
+          return apiClient(originalRequest);
         }
-      } else {
+      } catch (refreshErr) {
         localStorage.removeItem("token");
         localStorage.removeItem("refreshToken");
       }
@@ -65,4 +65,5 @@ apiClient.interceptors.response.use(
     return Promise.reject(new Error(message));
   }
 );
+
 

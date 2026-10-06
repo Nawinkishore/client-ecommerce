@@ -5,6 +5,13 @@ import { sendSuccess } from "../utils/response";
 import { BadRequestError, UnauthorizedError } from "../errors/app-error";
 import { SignupInput, LoginInput, ResetPasswordInput, RefreshTokenInput } from "@client-ecommerce/validation";
 
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+};
+
 export async function signup(
   req: Request<{}, {}, SignupInput>,
   res: Response,
@@ -12,6 +19,10 @@ export async function signup(
 ): Promise<void> {
   try {
     const { email, password, fullName, phone } = req.body;
+
+    if (!password) {
+      throw new BadRequestError("Password is required for registration");
+    }
 
     const existingProfile = await prisma.profile.findFirst({
       where: { email },
@@ -23,22 +34,45 @@ export async function signup(
 
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
-      password: password || "TemporaryPass123!",
+      password,
+      options: {
+        data: {
+          full_name: fullName,
+        },
+      },
     });
 
     if (authError || !authData.user) {
       throw new BadRequestError(authError?.message || "Failed to create authentication user");
     }
 
-    const profile = await prisma.profile.create({
-      data: {
-        userId: authData.user.id,
-        email,
-        fullName: fullName || null,
-        phone: phone || null,
-        role: "CUSTOMER",
-      },
+    // Attempt profile retrieval (or fallback creation if trigger delayed)
+    let profile = await prisma.profile.findUnique({
+      where: { userId: authData.user.id },
     });
+
+    if (!profile) {
+      profile = await prisma.profile.create({
+        data: {
+          userId: authData.user.id,
+          email,
+          fullName: fullName || null,
+          phone: phone || null,
+          role: "CUSTOMER",
+        },
+      });
+    }
+
+    if (authData.session) {
+      res.cookie("sb-access-token", authData.session.access_token, {
+        ...COOKIE_OPTIONS,
+        maxAge: authData.session.expires_in * 1000,
+      });
+      res.cookie("sb-refresh-token", authData.session.refresh_token, {
+        ...COOKIE_OPTIONS,
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      });
+    }
 
     sendSuccess(
       res,
@@ -99,6 +133,15 @@ export async function login(
       });
     }
 
+    res.cookie("sb-access-token", authData.session.access_token, {
+      ...COOKIE_OPTIONS,
+      maxAge: authData.session.expires_in * 1000,
+    });
+    res.cookie("sb-refresh-token", authData.session.refresh_token, {
+      ...COOKIE_OPTIONS,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
     sendSuccess(
       res,
       {
@@ -130,6 +173,10 @@ export async function logout(
 ): Promise<void> {
   try {
     await supabase.auth.signOut();
+
+    res.clearCookie("sb-access-token", { path: "/" });
+    res.clearCookie("sb-refresh-token", { path: "/" });
+
     sendSuccess(res, null, "Logged out successfully");
   } catch (err) {
     next(err);
@@ -200,13 +247,28 @@ export async function refreshToken(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { refreshToken: token } = req.body;
+    const token = req.body.refreshToken || req.cookies["sb-refresh-token"];
+
+    if (!token) {
+      throw new UnauthorizedError("Refresh token is missing");
+    }
 
     const { data, error } = await supabase.auth.refreshSession({ refresh_token: token });
 
     if (error || !data.session) {
+      res.clearCookie("sb-access-token", { path: "/" });
+      res.clearCookie("sb-refresh-token", { path: "/" });
       throw new UnauthorizedError("Session expired, please log in again");
     }
+
+    res.cookie("sb-access-token", data.session.access_token, {
+      ...COOKIE_OPTIONS,
+      maxAge: data.session.expires_in * 1000,
+    });
+    res.cookie("sb-refresh-token", data.session.refresh_token, {
+      ...COOKIE_OPTIONS,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
 
     sendSuccess(
       res,
@@ -221,4 +283,5 @@ export async function refreshToken(
     next(err);
   }
 }
+
 
