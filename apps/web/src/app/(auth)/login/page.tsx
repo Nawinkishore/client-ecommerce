@@ -25,11 +25,9 @@ function LoginForm() {
     setError("");
 
     try {
-      const userProfile = await login(email, password);
+      await login(email, password);
       if (redirectTo) {
         router.push(redirectTo);
-      } else if (userProfile?.role === "ADMIN") {
-        router.push("/admin/dashboard");
       } else {
         router.push("/");
       }

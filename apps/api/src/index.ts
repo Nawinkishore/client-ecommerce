@@ -3,10 +3,11 @@ import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
+import { toNodeHandler } from "better-auth/node";
+import { auth } from "./lib/auth";
 import { sendSuccess } from "./utils/response";
 import { errorHandler } from "./middleware/error-handler";
 
-import authRoutes from "./routes/auth.routes";
 import userRoutes from "./routes/user.routes";
 import categoryRoutes from "./routes/category.routes";
 import productRoutes from "./routes/product.routes";
@@ -28,22 +29,30 @@ app.use(
     credentials: true,
   })
 );
+
+// Better Auth API Endpoints Handler
+app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/v1/auth/*", toNodeHandler(auth));
+
 app.use(express.json());
 
-// Strict Rate Limiting for Authentication endpoints
+// Strict Rate Limiting for Auth endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 30, // Limit each IP to 30 requests per windowMs for auth endpoints
+  windowMs: 15 * 60 * 1000,
+  max: 30,
   message: {
     success: false,
     error: {
       code: "TOO_MANY_REQUESTS",
-      message: "Too many authentication requests from this IP, please try again after 15 minutes",
+      message: "Too many requests from this IP, please try again after 15 minutes",
     },
   },
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+app.use("/api/auth", authLimiter);
+app.use("/api/v1/auth", authLimiter);
 
 app.get("/health", (_req, res) => {
   return sendSuccess(
@@ -54,7 +63,6 @@ app.get("/health", (_req, res) => {
 });
 
 // API Routes
-app.use("/api/v1/auth", authLimiter, authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/products", productRoutes);
@@ -74,4 +82,3 @@ if (require.main === module) {
 }
 
 export default app;
-

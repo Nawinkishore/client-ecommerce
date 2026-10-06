@@ -160,7 +160,7 @@ test("Phase 3: Core API Architecture & Middleware Suite", async (t) => {
       });
 
       assert.ok(nextErr instanceof UnauthorizedError);
-      assert.equal(nextErr.message, "Authentication token is missing");
+      assert.ok(nextErr.message.includes("missing or invalid"));
     });
 
     await st.test("Rejects invalid token format or invalid JWT", async () => {

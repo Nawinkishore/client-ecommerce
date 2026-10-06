@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from "express";
+import { fromNodeHeaders } from "better-auth/node";
 import { prisma } from "../lib/prisma";
-import { supabase, createUserClient } from "../lib/supabase";
+import { auth } from "../lib/auth";
 import { sendSuccess } from "../utils/response";
 import { NotFoundError, UnauthorizedError, ForbiddenError, BadRequestError } from "../errors/app-error";
 import { CreateAddressInput, ChangePasswordInput } from "@client-ecommerce/validation";
@@ -146,28 +147,18 @@ export async function changePassword(
       throw new UnauthorizedError("Authentication required");
     }
 
-    const { newPassword } = req.body;
-    let token: string | undefined = req.cookies?.["sb-access-token"];
+    const { currentPassword, newPassword } = req.body as ChangePasswordInput & { currentPassword?: string };
 
-    if (!token && req.headers.authorization?.startsWith("Bearer ")) {
-      token = req.headers.authorization.split(" ")[1];
-    }
+    const result = await auth.api.changePassword({
+      headers: fromNodeHeaders(req.headers),
+      body: {
+        newPassword,
+        currentPassword: currentPassword || "",
+      },
+    });
 
-    let error: any = null;
-
-    if (token) {
-      const userSupabase = createUserClient(token);
-      const res = await userSupabase.auth.updateUser({ password: newPassword });
-      error = res.error;
-    } else {
-      const { error: adminError } = await supabase.auth.admin.updateUserById(req.user.userId, {
-        password: newPassword,
-      });
-      error = adminError;
-    }
-
-    if (error) {
-      throw new BadRequestError(error.message || "Failed to update password");
+    if (!result) {
+      throw new BadRequestError("Failed to update password");
     }
 
     sendSuccess(res, null, "Password updated successfully");
@@ -175,4 +166,3 @@ export async function changePassword(
     next(err);
   }
 }
-

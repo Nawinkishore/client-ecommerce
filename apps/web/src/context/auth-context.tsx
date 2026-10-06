@@ -1,6 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext } from "react";
+import { authClient, useSession, signIn, signUp, signOut } from "../lib/auth-client";
 import { apiClient } from "../lib/api-client";
 
 export interface UserProfile {
@@ -17,129 +18,64 @@ interface AuthContextType {
   role: "CUSTOMER" | "ADMIN";
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<UserProfile>;
-  register: (email: string, password: string, fullName: string, phone?: string) => Promise<UserProfile>;
+  login: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, fullName: string, phone?: string) => Promise<void>;
   logout: () => Promise<void>;
   refetchUser: () => Promise<void>;
-  changePassword: (newPassword: string) => Promise<void>;
-  resetPassword: (password: string, accessToken: string) => Promise<void>;
   updateProfile: (data: { fullName?: string; phone?: string; avatarUrl?: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: sessionData, isPending, refetch } = useSession();
 
-  const fetchMe = useCallback(async () => {
-    try {
-      const res = await apiClient.get("/api/v1/users/me");
-      if (res.data?.success) {
-        setUser(res.data.data);
-      } else {
-        localStorage.removeItem("token");
-        localStorage.removeItem("refreshToken");
-        setUser(null);
+  const user: UserProfile | null = sessionData?.user
+    ? {
+        id: sessionData.user.id,
+        userId: sessionData.user.id,
+        email: sessionData.user.email,
+        fullName: sessionData.user.name || undefined,
+        role: ((sessionData.user as { role?: string }).role as "CUSTOMER" | "ADMIN") || "CUSTOMER",
       }
-    } catch (err) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      setUser(null);
-    } finally {
-      setIsLoading(false);
+    : null;
+
+  const login = async (email: string, password: string): Promise<void> => {
+    const res = await signIn.email({ email, password });
+    if (res.error) {
+      throw new Error(res.error.message || "Failed to sign in");
     }
-  }, []);
-
-  useEffect(() => {
-    fetchMe();
-
-    // Cross-tab logout/login synchronization listener
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "token" || e.key === "refreshToken" || e.key === "auth_event") {
-        fetchMe();
-      }
-    };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
-  }, [fetchMe]);
-
-  const login = async (email: string, password: string): Promise<UserProfile> => {
-    const res = await apiClient.post("/api/v1/auth/login", { email, password });
-    if (res.data?.success) {
-      const { user: userProfile, session } = res.data.data;
-      if (session?.accessToken) {
-        localStorage.setItem("token", session.accessToken);
-      }
-      if (session?.refreshToken) {
-        localStorage.setItem("refreshToken", session.refreshToken);
-      }
-      localStorage.setItem("auth_event", `login_${Date.now()}`);
-      setUser(userProfile);
-      return userProfile;
-    }
-    throw new Error(res.data?.message || "Login failed");
+    await refetch();
   };
 
   const register = async (
     email: string,
     password: string,
     fullName: string,
-    phone?: string
-  ): Promise<UserProfile> => {
-    const res = await apiClient.post("/api/v1/auth/signup", { email, password, fullName, phone });
-    if (res.data?.success) {
-      const { user: userProfile, session } = res.data.data;
-      if (session?.accessToken) {
-        localStorage.setItem("token", session.accessToken);
-      }
-      if (session?.refreshToken) {
-        localStorage.setItem("refreshToken", session.refreshToken);
-      }
-      localStorage.setItem("auth_event", `register_${Date.now()}`);
-      setUser(userProfile);
-      return userProfile;
+    _phone?: string
+  ): Promise<void> => {
+    const res = await signUp.email({ email, password, name: fullName });
+    if (res.error) {
+      throw new Error(res.error.message || "Failed to create account");
     }
-    throw new Error(res.data?.message || "Registration failed");
+    await refetch();
   };
 
-  const logout = async () => {
-    try {
-      await apiClient.post("/api/v1/auth/logout");
-    } catch (e) {
-      console.warn("Logout request failed", e);
-    } finally {
-      localStorage.removeItem("token");
-      localStorage.removeItem("refreshToken");
-      localStorage.setItem("auth_event", `logout_${Date.now()}`);
-      setUser(null);
-    }
+  const logout = async (): Promise<void> => {
+    await signOut();
+    await refetch();
   };
 
-  const changePassword = async (newPassword: string) => {
-    const res = await apiClient.put("/api/v1/users/me/change-password", { newPassword });
-    if (!res.data?.success) {
-      throw new Error(res.data?.message || "Failed to update password");
-    }
-  };
-
-  const resetPassword = async (password: string, accessToken: string) => {
-    const res = await apiClient.post("/api/v1/auth/reset-password", { password, accessToken });
-    if (!res.data?.success) {
-      throw new Error(res.data?.message || "Failed to reset password");
-    }
+  const refetchUser = async (): Promise<void> => {
+    await refetch();
   };
 
   const updateProfile = async (data: { fullName?: string; phone?: string; avatarUrl?: string }) => {
     const res = await apiClient.put("/api/v1/users/me", data);
-    if (res.data?.success) {
-      setUser(res.data.data);
-    } else {
+    if (!res.data?.success) {
       throw new Error(res.data?.message || "Failed to update profile");
     }
+    await refetch();
   };
 
   return (
@@ -148,13 +84,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         role: user?.role || "CUSTOMER",
         isAuthenticated: !!user,
-        isLoading,
+        isLoading: isPending,
         login,
         register,
         logout,
-        refetchUser: fetchMe,
-        changePassword,
-        resetPassword,
+        refetchUser,
         updateProfile,
       }}
     >
@@ -170,4 +104,3 @@ export const useAuthContext = () => {
   }
   return context;
 };
-

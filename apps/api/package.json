@@ -25,6 +25,7 @@
     "@client-ecommerce/validation": "workspace:*",
     "@prisma/client": "^5.11.0",
     "@supabase/supabase-js": "^2.39.8",
+    "better-auth": "^1.7.7",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

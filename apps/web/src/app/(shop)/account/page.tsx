@@ -35,7 +35,7 @@ interface Address {
 }
 
 export default function AccountPage() {
-  const { user, updateProfile, changePassword, role } = useAuth();
+  const { user, updateProfile, role } = useAuth();
   const [activeTab, setActiveTab] = useState<"profile" | "addresses" | "security">("profile");
 
   // Profile Form State
@@ -124,7 +124,7 @@ export default function AccountPage() {
 
     setIsChangingPassword(true);
     try {
-      await changePassword(newPassword);
+      await apiClient.put("/api/v1/users/me/change-password", { newPassword });
       setSecMsg({ type: "success", text: "Password changed successfully!" });
       setNewPassword("");
       setConfirmPassword("");

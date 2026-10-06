@@ -27,18 +27,11 @@ function RegisterForm() {
     setError("");
 
     try {
-      const userProfile = await register(email, password, fullName);
-      const hasToken = typeof window !== "undefined" && localStorage.getItem("token");
-      
-      if (hasToken || isAuthenticated) {
-        if (redirectTo) {
-          router.push(redirectTo);
-        } else {
-          router.push("/");
-        }
+      await register(email, password, fullName);
+      if (redirectTo) {
+        router.push(redirectTo);
       } else {
-        // Email confirmation is required by Supabase Auth
-        setIsConfirmationSent(true);
+        router.push("/");
       }
     } catch (err: any) {
       setError(err.message || "Registration failed");
